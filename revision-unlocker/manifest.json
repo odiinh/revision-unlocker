@@ -4,9 +4,6 @@
     "description": "An extension which modifies the links on [redacted]'s exam materials page to publically available copies.",
     "version": "1.0.0",
     "icons": {
-        "16": "logo/logo-16.png",
-        "48": "logo/logo-48.png",
-        "128": "logo/logo-128.png"
     },
     "web_accessible_resources": [
         {
