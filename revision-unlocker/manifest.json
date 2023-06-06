@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Revision Unlocker",
     "description": "An extension which modifies the links on [redacted]'s exam materials page to publically available copies.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "icons": {
     },
     "web_accessible_resources": [
