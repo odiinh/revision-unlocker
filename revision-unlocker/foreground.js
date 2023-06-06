@@ -1,4 +1,4 @@
-(async () => {
+waitForElm('.docmargin').then(async () => {
     var url = window.location.href;
     if (String(url).match(/^https:\/\/qualifications\.pearson\.com\/en\/qualifications\/.*Exam-materials$/g) != null) {
         var fileNames = []
@@ -38,4 +38,23 @@
             }
         })
     }
-})();
+});
+function waitForElm(selector) {
+    return new Promise(resolve => {
+        if (document.querySelector(selector)) {
+            return resolve(document.querySelector(selector));
+        }
+
+        const observer = new MutationObserver(mutations => {
+            if (document.querySelector(selector)) {
+                resolve(document.querySelector(selector));
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+}

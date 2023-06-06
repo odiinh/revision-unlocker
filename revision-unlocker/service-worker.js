@@ -11,10 +11,9 @@
 				console.log("i see some filenames")
 				var storedUrls = {}
 				var search = await chrome.storage.local.get("storedUrls")
-				if (search != {}) {
+				if (Object.keys(search).length != 0) {
 					storedUrls = search.storedUrls
 				}
-				
 				var storedUrlKeys = Object.keys(storedUrls)
 				var storedUrlValues = Object.values(storedUrls)
 				var returnedURLS = {}
@@ -22,15 +21,23 @@
 					let urlInfo = msg.fileNames[index]
 					var fileStorageIndex = storedUrlKeys.indexOf(urlInfo.fileName)
 					if (fileStorageIndex != -1){
-						returnedURLS[index]=storedUrlValues[fileStorageIndex]
+						if (storedUrlValues[fileStorageIndex].URL) {
+							returnedURLS[index]=storedUrlValues[fileStorageIndex].URL
+						}
+						else if (storedUrlValues[fileStorageIndex].URL == "") {
+							var searchParams = Object.defineProperties(urlInfo,{"searchedMonth":{value:storedUrlValues[fileStorageIndex].searchedMonth},"searchedYear":{value:storedUrlValues[fileStorageIndex].searchedYear}})
+							var searchedURL = await findURL(searchParams).then(searchObj => {
+								console.log(searchObj)
+								storedUrls[urlInfo.fileName] = searchObj
+								returnedURLS[index]=searchObj.URL
+							})
+						}
 					}
 					else {
-						var searchedURL = await findURL(urlInfo).then(url => {
-							console.log(url)
-							if (url != "") {
-								storedUrls[urlInfo.fileName] = url
-							}
-							returnedURLS[index]=url
+						var searchedURL = await findURL(urlInfo).then(searchObj => {
+							console.log(searchObj)
+							storedUrls[urlInfo.fileName] = searchObj
+							returnedURLS[index]=searchObj.URL
 						})
 					}
 					if (index == msg.fileNames.length-1) {
@@ -45,10 +52,18 @@
 })();
 
 async function findURL(urlInfo) {
-	var year = urlInfo.year
-	var month = urlInfo.month
-	if (month != "01") {
-		month = String(parseInt(month) - 1).padStart(2, '0')
+	var year
+	var month
+	if (urlInfo.searchedMonth) {
+		year = urlInfo.searchedYear
+		month = urlInfo.searchedMonth
+	}
+	else {
+		year = urlInfo.year
+		month = urlInfo.month
+		if (month != "01") {
+			month = String(parseInt(month) - 1).padStart(2, '0')
+		}
 	}
 	var fileName = urlInfo.fileName
 	var URL = 'https://dynamicpapers.com/wp-content/uploads/' + year + '/' + month + '/' + fileName;
@@ -56,7 +71,7 @@ async function findURL(urlInfo) {
 	var currentYear = String(new Date().getFullYear())
 	var found = false
 	var count = 0
-	while (found == false && count < 5) {
+	while (found == false) {
 		var request = await fetch(URL, {
 			"headers": {
 				"accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -76,10 +91,10 @@ async function findURL(urlInfo) {
 		});
 		if (request.status == 200) {
 			found = true
-			return URL;
+			return {URL:URL, searchedMonth: currentMonth, searchedYear:currentYear};
 		}
 		else if (month == currentMonth && year == currentYear) {
-			return "";
+			return {URL:"", searchedMonth: currentMonth, searchedYear:currentYear};
 		}
 		else if (request.status == 404) {
 			URL = URL.split('/')
@@ -91,8 +106,6 @@ async function findURL(urlInfo) {
 			}
 			URL[URL.length - 2] = month
 			URL = URL.join("/")
-			count++
 		}
 	}
-	return ""
 }
