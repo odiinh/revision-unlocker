@@ -1,2 +1,4 @@
 # revision-unlocker
-A chrome extension which modifies the links on [redacted]'s exam materials page to publically available copies (which not provided by myself) 
+A chromium extension which modifies the links to the locked and more recent exam papers from *a certain exam syllabus'* website to publically available copies.
+
+Created during exam season 2023, to provide extra revision resources to myself and others. 
